@@ -1,0 +1,38 @@
+# FastAPI backend
+fastapi
+uvicorn[standard]
+
+# Configuration and validation
+pydantic-settings
+email-validator
+
+# Database and migrations
+sqlalchemy
+alembic
+
+# Authentication and password security
+PyJWT
+pwdlib[argon2]
+python-multipart
+
+# Machine learning and data processing
+scikit-learn
+pandas
+numpy
+joblib
+
+# Generative AI and RAG
+openai
+sentence-transformers
+chromadb
+
+# Document processing
+pypdf
+
+# Testing
+pytest
+httpx
+pytest-cov
+
+# Code quality
+ruff

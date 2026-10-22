@@ -1,0 +1,56 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Test and coverage files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Code quality caches
+.ruff_cache/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Machine-learning artifacts
+ml_artifacts/*
+!ml_artifacts/.gitkeep
+
+# Vector database files
+vector_db/*
+!vector_db/.gitkeep
+
+# Local knowledge-base data
+data/knowledge_base/*
+!data/knowledge_base/.gitkeep
+
+# Local sample or uploaded data
+data/sample_tickets/*
+
+# Logs
+*.log
+logs/
+
+# IDE and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker and temporary files
+*.tmp
+*.bak
