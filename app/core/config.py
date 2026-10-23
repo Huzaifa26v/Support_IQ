@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "SupportIQ"
     app_env: str = "development"
     debug: bool = True
+
     api_v1_prefix: str = "/api/v1"
 
     database_url: str = "sqlite:///./supportiq.db"
