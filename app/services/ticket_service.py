@@ -8,8 +8,8 @@ from app.models.ticket import Ticket
 from app.repositories import ticket_repository
 from app.repositories import user_repository
 
-# Import the TicketCreate schema.
-from app.schemas.ticket import TicketCreate
+# Import schemas for ticket creation and status updates.
+from app.schemas.ticket import TicketCreate, TicketStatusUpdate
 
 
 # ==========================================================
@@ -125,4 +125,42 @@ def list_customer_tickets(
     return ticket_repository.get_tickets_by_customer(
         db,
         customer_id,
+    )
+
+# ==========================================================
+# 5. UPDATE TICKET STATUS
+# ==========================================================
+
+def update_ticket_status(
+    db: Session,
+    ticket_id: int,
+    status_data: TicketStatusUpdate,
+) -> Ticket | None:
+    """
+    Update the status of an existing support ticket.
+
+    Args:
+        db: Active database session.
+        ticket_id: ID of the ticket to update.
+        status_data: Validated new ticket status.
+
+    Returns:
+        Updated Ticket object if found, otherwise None.
+    """
+
+    # First, find the ticket using its ID.
+    ticket = ticket_repository.get_ticket_by_id(
+        db,
+        ticket_id,
+    )
+
+    # Return None if the requested ticket does not exist.
+    if ticket is None:
+        return None
+
+    # Update the ticket status through the repository.
+    return ticket_repository.update_ticket_status(
+        db=db,
+        ticket=ticket,
+        new_status=status_data.status,
     )
