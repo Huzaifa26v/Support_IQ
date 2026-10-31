@@ -17,8 +17,12 @@ from sqlalchemy.orm import Session
 # Import the database session dependency.
 from app.db.session import get_db
 
-# Import ticket schemas.
-from app.schemas.ticket import TicketCreate, TicketResponse
+# Import schemas for ticket creation, responses, and status updates.
+from app.schemas.ticket import (
+    TicketCreate,
+    TicketResponse,
+    TicketStatusUpdate,
+)
 
 # Import ticket service business logic.
 from app.services import ticket_service
@@ -147,4 +151,36 @@ def get_ticket_by_id(
             detail="Ticket not found.",
         )
 
+    return ticket
+
+
+# ==========================================================
+# 4. UPDATE TICKET STATUS
+# ==========================================================
+
+# PATCH request updates only the status of an existing ticket.
+@router.patch(
+    "/{ticket_id}/status",
+    response_model=TicketResponse,
+)
+def update_ticket_status(
+    ticket_id: int,
+    status_data: TicketStatusUpdate,
+    db: DatabaseSession,
+):
+    # Ask the service layer to update the ticket status.
+    ticket = ticket_service.update_ticket_status(
+        db=db,
+        ticket_id=ticket_id,
+        status_data=status_data,
+    )
+
+    # Return HTTP 404 if the ticket does not exist.
+    if ticket is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ticket not found.",
+        )
+
+    # Return the updated ticket.
     return ticket
