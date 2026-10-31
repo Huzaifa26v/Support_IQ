@@ -111,3 +111,38 @@ def get_tickets_by_customer(
 
     # Execute the query and return matching tickets.
     return list(db.scalars(statement).all())
+
+
+
+# ==========================================================
+# 5. UPDATE TICKET STATUS
+# ==========================================================
+
+def update_ticket_status(
+    db: Session,
+    ticket: Ticket,
+    new_status: str,
+) -> Ticket:
+    """
+    Update the status of an existing support ticket.
+
+    Args:
+        db: Active database session.
+        ticket: Ticket object that needs updating.
+        new_status: New status for the ticket.
+
+    Returns:
+        The updated Ticket object.
+    """
+
+    # Change the ticket's current status.
+    ticket.status = new_status
+
+    # Save the changes to the database.
+    db.commit()
+
+    # Refresh the object to retrieve updated database values.
+    db.refresh(ticket)
+
+    # Return the updated ticket.
+    return ticket
