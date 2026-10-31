@@ -82,3 +82,23 @@ class TicketResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+ # ==========================================================
+# 3. TICKET STATUS UPDATE SCHEMA
+# ==========================================================
+
+class TicketStatusUpdate(BaseModel):
+    """
+    Schema used when updating a ticket's status.
+
+    Only the four supported ticket statuses are accepted.
+    """
+
+    # Restrict status updates to the allowed values.
+    status: Literal[
+        "open",
+        "in_progress",
+        "resolved",
+        "closed",
+    ]   
