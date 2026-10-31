@@ -1,15 +1,32 @@
 # Import APIRouter to combine multiple API routes.
 from fastapi import APIRouter
 
-# Import the router containing our user-management endpoints.
+# Import the User management router.
 from app.api.v1.endpoints.users import router as users_router
 
+# Import the Ticket management router.
+from app.api.v1.endpoints.tickets import router as tickets_router
 
-# Create the main API router.
-# This router will contain all version 1 API endpoints.
+
+# ==========================================================
+# MAIN API ROUTER
+# ==========================================================
+
+# Create the main router for API version 1.
 api_router = APIRouter()
 
 
-# Register the user-management routes.
-# This makes the user endpoints available through the main router.
+# ==========================================================
+# REGISTER USER ENDPOINTS
+# ==========================================================
+
+# Include all user-management endpoints.
 api_router.include_router(users_router)
+
+
+# ==========================================================
+# REGISTER TICKET ENDPOINTS
+# ==========================================================
+
+# Include all ticket-management endpoints.
+api_router.include_router(tickets_router)
