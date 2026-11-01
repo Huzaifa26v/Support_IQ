@@ -10,21 +10,17 @@ from app.core.config import settings
 # Import the main API router containing all version 1 endpoints.
 from app.api.v1.router import api_router
 
-# Import the function responsible for initializing database tables.
-from app.db.init_db import init_db
-
 
 # ==========================================================
 # APPLICATION LIFESPAN
 # ==========================================================
 
-# This function manages what happens when the application starts
-# and when it shuts down.
+# This function manages application startup and shutdown.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # Create database tables when the application starts.
-    init_db()
+    # Database tables are managed through Alembic migrations.
+    # We no longer create tables automatically during startup.
 
     # Keep the application running.
     yield
