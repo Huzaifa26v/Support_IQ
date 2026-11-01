@@ -68,6 +68,8 @@ class TicketResponse(BaseModel):
     # Current ticket priority.
     priority: str
 
+    # Automatically predicted category of the support ticket.
+    category: str
     # ID of the customer who owns this ticket.
     customer_id: int
 

@@ -57,6 +57,14 @@ class Ticket(Base):
         nullable=False,
     )
 
+    # ML-predicted category of the customer support ticket.
+    # The default value supports existing tickets.
+    category: Mapped[str] = mapped_column(
+        String(50),
+        default="other",
+        nullable=False,
+    )
+
     # ------------------------------------------------------
     # 3. TICKET STATUS
     # ------------------------------------------------------
@@ -91,8 +99,7 @@ class Ticket(Base):
     )
 
     # Establish an ORM relationship with the User model.
-    # This allows us to access the customer associated
-    # with a ticket through ticket.customer.
+    # This allows access through ticket.customer.
     customer = relationship(
         "User",
         back_populates="tickets",

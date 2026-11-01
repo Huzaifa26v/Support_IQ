@@ -18,18 +18,21 @@ def create_ticket(
     description: str,
     customer_id: int,
     priority: str,
+    category: str,
 ) -> Ticket:
+    
     """
     Create and save a new support ticket.
     """
 
     # Create a new Ticket database object.
     ticket = Ticket(
-        title=title,
-        description=description,
-        customer_id=customer_id,
-        priority=priority,
-    )
+    title=title,
+    description=description,
+    customer_id=customer_id,
+    priority=priority,
+    category=category,
+)
 
     # Add the ticket to the current database session.
     db.add(ticket)
