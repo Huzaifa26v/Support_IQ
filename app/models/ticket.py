@@ -35,7 +35,6 @@ class Ticket(Base):
     # 1. PRIMARY KEY
     # ------------------------------------------------------
 
-    # Every ticket receives a unique ID.
     id: Mapped[int] = mapped_column(
         primary_key=True,
         index=True,
@@ -58,10 +57,17 @@ class Ticket(Base):
     )
 
     # ML-predicted category of the customer support ticket.
-    # The default value supports existing tickets.
     category: Mapped[str] = mapped_column(
         String(50),
         default="other",
+        nullable=False,
+    )
+
+    # ML-predicted urgency of the customer support ticket.
+    # Possible values: high, medium, low.
+    urgency: Mapped[str] = mapped_column(
+        String(20),
+        default="medium",
         nullable=False,
     )
 
@@ -80,7 +86,8 @@ class Ticket(Base):
     # 4. TICKET PRIORITY
     # ------------------------------------------------------
 
-    # Default priority is "medium".
+    # Operational priority assigned to the ticket.
+    # This remains separate from ML-predicted urgency.
     priority: Mapped[str] = mapped_column(
         String(20),
         default="medium",
@@ -99,7 +106,6 @@ class Ticket(Base):
     )
 
     # Establish an ORM relationship with the User model.
-    # This allows access through ticket.customer.
     customer = relationship(
         "User",
         back_populates="tickets",
@@ -134,5 +140,6 @@ class Ticket(Base):
         return (
             f"<Ticket(id={self.id}, "
             f"title='{self.title}', "
-            f"status='{self.status}')>"
+            f"status='{self.status}', "
+            f"urgency='{self.urgency}')>"
         )

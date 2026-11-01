@@ -70,6 +70,10 @@ class TicketResponse(BaseModel):
 
     # Automatically predicted category of the support ticket.
     category: str
+
+    # Automatically predicted urgency of the support ticket.
+    urgency: Literal["low", "medium", "high"]
+
     # ID of the customer who owns this ticket.
     customer_id: int
 

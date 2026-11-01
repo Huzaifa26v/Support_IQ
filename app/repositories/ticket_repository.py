@@ -19,6 +19,7 @@ def create_ticket(
     customer_id: int,
     priority: str,
     category: str,
+    urgency: str
 ) -> Ticket:
     
     """
@@ -32,6 +33,7 @@ def create_ticket(
     customer_id=customer_id,
     priority=priority,
     category=category,
+    urgency=urgency
 )
 
     # Add the ticket to the current database session.

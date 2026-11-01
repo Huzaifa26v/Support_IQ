@@ -14,6 +14,7 @@ from app.schemas.ticket import TicketCreate, TicketStatusUpdate
 # Import the trained ML prediction function.
 from ml.predict import predict_category
 
+from ml.predict_urgency import predict_urgency
 
 # ==========================================================
 # 1. CREATE TICKET
@@ -30,7 +31,7 @@ def create_ticket(
     1. The customer must exist.
     2. The customer account must be active.
     3. The user must have the customer role.
-    4. The ML model automatically predicts the ticket category.
+    4. The ML models automatically predict ticket category and urgency.
     """
 
     # Find the customer using the supplied customer ID.
@@ -61,6 +62,8 @@ def create_ticket(
     # Predict the ticket category using our trained ML model.
     predicted_category = predict_category(ticket_text)
 
+    # Predict ticket urgency using our trained ML model.
+    predicted_urgency = predict_urgency(ticket_text)
     # Save the ticket with its automatically predicted category.
     return ticket_repository.create_ticket(
         db=db,
@@ -69,6 +72,7 @@ def create_ticket(
         customer_id=ticket_data.customer_id,
         priority=ticket_data.priority,
         category=predicted_category,
+        urgency=predicted_urgency,
     )
 
 
