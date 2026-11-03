@@ -153,3 +153,65 @@ def test_search_rejects_invalid_result_count():
             "Refund policy",
             n_results=0,
         )
+
+
+      # ==========================================================
+# CHUNK DELETION TESTS
+# ==========================================================
+
+def test_delete_chunks_removes_stored_chunks(
+    test_collection,
+    monkeypatch,
+):
+    """Verify that stored chunks can be deleted from ChromaDB."""
+
+    # Mock embeddings to avoid loading the real embedding model.
+    monkeypatch.setattr(
+        vector_store,
+        "generate_embeddings",
+        lambda texts: [[0.1] * 384 for _ in texts],
+    )
+
+    # Insert a sample chunk into the temporary collection.
+    chunks = [
+        {
+            "chunk_index": 0,
+            "text": "SupportIQ customer support policy.",
+        }
+    ]
+
+    chunk_ids = vector_store.add_chunks(chunks)
+
+    # Confirm that the chunk was stored.
+    assert test_collection.count() == 1
+
+    # Delete the stored chunk.
+    vector_store.delete_chunks(chunk_ids)
+
+    # Confirm that the chunk was removed.
+    assert test_collection.count() == 0
+
+
+def test_delete_chunks_handles_empty_list():
+    """Verify that an empty ID list requires no deletion."""
+
+    # An empty list should return without accessing ChromaDB.
+    result = vector_store.delete_chunks([])
+
+    assert result is None
+
+
+def test_delete_chunks_rejects_invalid_input_type():
+    """Verify that chunk IDs must be provided as a list."""
+
+    # Passing a string instead of a list should raise TypeError.
+    with pytest.raises(TypeError, match="must be a list"):
+        vector_store.delete_chunks("invalid-id")
+
+
+def test_delete_chunks_rejects_invalid_chunk_ids():
+    """Verify that every chunk ID must be a string."""
+
+    # A list containing a non-string ID should be rejected.
+    with pytest.raises(TypeError, match="must be a string"):
+        vector_store.delete_chunks(["valid-id", 123])  

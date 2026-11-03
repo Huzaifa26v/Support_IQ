@@ -16,7 +16,7 @@ from app.db.base import Base
 
 # Import models so SQLAlchemy registers their tables.
 # Without these imports, Alembic may not detect the models.
-from app.models import User, Ticket  # noqa: F401
+from app.models import User, Ticket, KnowledgeDocument  # noqa: F401
 
 
 # ==========================================================

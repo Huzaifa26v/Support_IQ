@@ -5,7 +5,6 @@ import chromadb
 
 from app.rag.embeddings import generate_embeddings, generate_query_embedding
 
-
 # Project root directory
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -105,6 +104,29 @@ def add_chunks(
 
     return chunk_ids
 
+def delete_chunks(chunk_ids: list[str]) -> None:
+    """
+    Delete previously stored chunks from ChromaDB.
+
+    This cleanup function helps prevent orphaned vectors
+    when a document's database update fails.
+    """
+
+    # Validate the supplied chunk IDs.
+    if not isinstance(chunk_ids, list):
+        raise TypeError("chunk_ids must be a list.")
+
+    if not chunk_ids:
+        return
+
+    if not all(isinstance(chunk_id, str) for chunk_id in chunk_ids):
+        raise TypeError("Every chunk ID must be a string.")
+
+    # Access the existing ChromaDB collection.
+    collection = get_vector_store()
+
+    # Delete the specified chunks.
+    collection.delete(ids=chunk_ids)
 
 def search_similar_chunks(
     query: str,
