@@ -1,6 +1,5 @@
 from sentence_transformers import SentenceTransformer
 
-
 # Default embedding model
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 

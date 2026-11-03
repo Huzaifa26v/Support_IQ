@@ -4,12 +4,11 @@ from contextlib import asynccontextmanager
 # Import FastAPI to create our backend application.
 from fastapi import FastAPI
 
-# Import application settings from the configuration file.
-from app.core.config import settings
-
 # Import the main API router containing all version 1 endpoints.
 from app.api.v1.router import api_router
 
+# Import application settings from the configuration file.
+from app.core.config import settings
 
 # ==========================================================
 # APPLICATION LIFESPAN

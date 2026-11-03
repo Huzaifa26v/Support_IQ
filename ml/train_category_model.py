@@ -10,8 +10,8 @@ from sklearn.metrics import (
 
 # Import our dataset loading functions.
 from ml.data_loader import (
-    load_supportiq_dataset,
     extract_features_and_labels,
+    load_supportiq_dataset,
 )
 
 # Import our TF-IDF vectorization functions.
@@ -20,7 +20,6 @@ from ml.preprocessing.vectorizer import (
     fit_transform_text,
     transform_text,
 )
-
 
 # ==========================================================
 # MODEL CONFIGURATION

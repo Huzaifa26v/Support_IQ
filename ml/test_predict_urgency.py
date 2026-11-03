@@ -3,10 +3,9 @@ import pytest
 
 # Import the urgency prediction module.
 from ml.predict_urgency import (
-    predict_urgency,
     load_urgency_model,
+    predict_urgency,
 )
-
 
 # ==========================================================
 # TEST MODEL LOADING

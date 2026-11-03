@@ -1,17 +1,16 @@
 # Import Linear Support Vector Classifier.
-from sklearn.svm import LinearSVC
-
 # Import evaluation metrics.
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
 )
+from sklearn.svm import LinearSVC
 
 # Import dataset loading functions.
 from ml.data_loader import (
-    load_supportiq_dataset,
     extract_features_and_labels,
+    load_supportiq_dataset,
 )
 
 # Import TF-IDF vectorization functions.
@@ -20,7 +19,6 @@ from ml.preprocessing.vectorizer import (
     fit_transform_text,
     transform_text,
 )
-
 
 # ==========================================================
 # MODEL CONFIGURATION

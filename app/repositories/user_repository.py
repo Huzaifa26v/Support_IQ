@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 # Import our User database model.
 from app.models.user import User
 
-
 # ==========================================================
 # 1. GET USER BY EMAIL
 # ==========================================================

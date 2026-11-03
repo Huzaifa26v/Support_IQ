@@ -2,8 +2,7 @@
 from logging.config import fileConfig
 
 # Import SQLAlchemy tools.
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 # Import Alembic context.
 from alembic import context
@@ -16,8 +15,7 @@ from app.db.base import Base
 
 # Import models so SQLAlchemy registers their tables.
 # Without these imports, Alembic may not detect the models.
-from app.models import User, Ticket, KnowledgeDocument  # noqa: F401
-
+from app.models import KnowledgeDocument, Ticket, User  # noqa: F401
 
 # ==========================================================
 # 1. ALEMBIC CONFIGURATION

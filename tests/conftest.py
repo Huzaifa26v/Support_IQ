@@ -9,15 +9,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-# Import the FastAPI application.
-from app.main import app
-
 # Import the shared SQLAlchemy Base class.
 from app.db.base import Base
 
 # Import the database dependency used by our API endpoints.
 from app.db.session import get_db
 
+# Import the FastAPI application.
+from app.main import app
 
 # ==========================================================
 # 1. TEST DATABASE CONFIGURATION

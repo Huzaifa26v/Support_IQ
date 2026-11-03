@@ -2,11 +2,8 @@
 from pathlib import Path
 
 # Import pandas for dataset analysis.
-import pandas as pd
-
 # Import load_from_disk to load our local Hugging Face dataset.
 from datasets import load_from_disk
-
 
 # ==========================================================
 # DATASET CONFIGURATION

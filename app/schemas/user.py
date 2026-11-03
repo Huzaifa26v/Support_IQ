@@ -7,7 +7,6 @@ from datetime import datetime
 # Field allows us to add validation rules.
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-
 # ==========================================================
 # 1. USER CREATE SCHEMA
 # ==========================================================

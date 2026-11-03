@@ -4,21 +4,21 @@ from pathlib import Path
 # Import Joblib to save machine learning artifacts.
 import joblib
 
-# Import Linear SVM classifier.
-from sklearn.svm import LinearSVC
-
 # Import evaluation metrics.
 from sklearn.metrics import (
     accuracy_score,
-    f1_score,
     classification_report,
     confusion_matrix,
+    f1_score,
 )
+
+# Import Linear SVM classifier.
+from sklearn.svm import LinearSVC
 
 # Import dataset loading functions.
 from ml.data_loader import (
-    load_supportiq_dataset,
     extract_features_and_labels,
+    load_supportiq_dataset,
 )
 
 # Import TF-IDF vectorization functions.
@@ -27,7 +27,6 @@ from ml.preprocessing.vectorizer import (
     fit_transform_text,
     transform_text,
 )
-
 
 # ==========================================================
 # CONFIGURATION

@@ -5,15 +5,13 @@ from sqlalchemy.orm import Session
 from app.models.ticket import Ticket
 
 # Import repositories for database operations.
-from app.repositories import ticket_repository
-from app.repositories import user_repository
+from app.repositories import ticket_repository, user_repository
 
 # Import schemas for ticket creation and status updates.
 from app.schemas.ticket import TicketCreate, TicketStatusUpdate
 
 # Import the trained ML prediction function.
 from ml.predict import predict_category
-
 from ml.predict_urgency import predict_urgency
 
 # ==========================================================

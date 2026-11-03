@@ -1,5 +1,6 @@
 # Import datetime utilities for the account creation timestamp.
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 # Import SQLAlchemy column types.
 from sqlalchemy import Boolean, DateTime, String
@@ -10,6 +11,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 # Import the shared SQLAlchemy Base class.
 from app.db.base import Base
 
+# Import Ticket only for type checking.
+# This avoids a circular import between User and Ticket.
+if TYPE_CHECKING:
+    from app.models.ticket import Ticket
 
 # ==========================================================
 # USER DATABASE MODEL
@@ -92,7 +97,7 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
         nullable=False,
     )
 

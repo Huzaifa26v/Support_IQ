@@ -4,7 +4,6 @@ from pathlib import Path
 # Import Joblib to load the saved ML model.
 import joblib
 
-
 # ==========================================================
 # CONFIGURATION
 # ==========================================================

@@ -1,21 +1,21 @@
 """Create users and tickets tables
 
 Revision ID: 59b751c7e939
-Revises: 
+Revises:
 Create Date: 2026-11-01 16:06:21.545664
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '59b751c7e939'
-down_revision: Union[str, Sequence[str], None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -44,8 +44,20 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['customer_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_tickets_customer_id'), 'tickets', ['customer_id'], unique=False)
-    op.create_index(op.f('ix_tickets_id'), 'tickets', ['id'], unique=False)
+    # Create indexes for faster ticket lookups.
+    op.create_index(
+        op.f('ix_tickets_customer_id'),
+        'tickets',
+        ['customer_id'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_tickets_id'),
+        'tickets',
+        ['id'],
+        unique=False,
+    )
+
     # ### end Alembic commands ###
 
 

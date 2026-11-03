@@ -7,8 +7,7 @@ from app.db.session import engine
 # Import both models.
 # This ensures SQLAlchemy registers their tables
 # before creating the database schema.
-from app.models import User, Ticket  # noqa: F401
-
+from app.models import Ticket, User  # noqa: F401
 
 # ==========================================================
 # DATABASE INITIALIZATION

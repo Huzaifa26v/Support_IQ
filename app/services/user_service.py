@@ -11,7 +11,6 @@ from app.repositories import user_repository
 # Import the UserCreate schema for validated input.
 from app.schemas.user import UserCreate
 
-
 # ==========================================================
 # 1. CREATE USER
 # ==========================================================

@@ -1,12 +1,7 @@
-# Import the User database model.
-from app.models.user import User
-from app.models.ticket import Ticket
-from app.models.knowledge_document import KnowledgeDocument  # noqa: F401
-
-# Import the Ticket database model.
-from app.models.ticket import Ticket
-
+# Export database models from this package.
 from app.models.knowledge_document import KnowledgeDocument
+from app.models.ticket import Ticket
+from app.models.user import User
 
 # Define which models are available when importing this package.
 __all__ = [

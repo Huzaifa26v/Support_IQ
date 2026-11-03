@@ -1,9 +1,8 @@
 # Import the Hugging Face function used to download datasets.
-from datasets import load_dataset
-
 # Import Path to manage project directories and file paths.
 from pathlib import Path
 
+from datasets import load_dataset
 
 # ==========================================================
 # DATASET CONFIGURATION

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 # Import the Ticket database model.
 from app.models.ticket import Ticket
 
-
 # ==========================================================
 # 1. CREATE TICKET
 # ==========================================================

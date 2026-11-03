@@ -1,19 +1,19 @@
 # Import both classification algorithms.
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
 
 # Import evaluation metrics.
 from sklearn.metrics import (
     accuracy_score,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
 )
+from sklearn.svm import LinearSVC
 
 # Import dataset loading functions.
 from ml.data_loader import (
-    load_supportiq_dataset,
     extract_features_and_labels,
+    load_supportiq_dataset,
 )
 
 # Import TF-IDF vectorization functions.
@@ -22,7 +22,6 @@ from ml.preprocessing.vectorizer import (
     fit_transform_text,
     transform_text,
 )
-
 
 # ==========================================================
 # CONFIGURATION

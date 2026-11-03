@@ -1,5 +1,5 @@
 # Import datetime utilities to store ticket creation and update times.
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 # Import SQLAlchemy column types.
 from sqlalchemy import (
@@ -14,7 +14,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Import the shared SQLAlchemy Base class.
 from app.db.base import Base
-
 
 # ==========================================================
 # TICKET DATABASE MODEL
@@ -118,15 +117,15 @@ class Ticket(Base):
     # Automatically record when the ticket is created.
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
         nullable=False,
     )
 
     # Automatically record when the ticket is updated.
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
 

@@ -24,7 +24,6 @@ from app.schemas.user import UserCreate, UserResponse
 # Import the user service containing our business logic.
 from app.services import user_service
 
-
 # Create an API router for all user-related endpoints.
 # prefix="/users" means every route starts with /users.
 # tags=["Users"] groups these endpoints in Swagger UI.

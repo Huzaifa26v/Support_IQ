@@ -9,8 +9,8 @@ from sklearn.svm import LinearSVC
 
 # Import our dataset loading functions.
 from ml.data_loader import (
-    load_supportiq_dataset,
     extract_features_and_labels,
+    load_supportiq_dataset,
 )
 
 # Import TF-IDF vectorization functions.
@@ -18,7 +18,6 @@ from ml.preprocessing.vectorizer import (
     create_vectorizer,
     fit_transform_text,
 )
-
 
 # ==========================================================
 # CONFIGURATION

@@ -7,7 +7,6 @@ from typing import Literal
 # Import Pydantic tools for validation and serialization.
 from pydantic import BaseModel, ConfigDict, Field
 
-
 # ==========================================================
 # 1. TICKET CREATE SCHEMA
 # ==========================================================

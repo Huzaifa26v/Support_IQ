@@ -27,7 +27,6 @@ from app.schemas.ticket import (
 # Import ticket service business logic.
 from app.services import ticket_service
 
-
 # ==========================================================
 # ROUTER CONFIGURATION
 # ==========================================================

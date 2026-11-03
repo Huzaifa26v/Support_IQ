@@ -1,8 +1,8 @@
 # Import the functions we want to test.
 from ml.data_loader import (
-    load_supportiq_dataset,
-    extract_features_and_labels,
     TARGET_COLUMNS,
+    extract_features_and_labels,
+    load_supportiq_dataset,
 )
 
 
