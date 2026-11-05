@@ -1,13 +1,14 @@
-# Import the existing RAG response generator.
-from app.llm.response_generator import generate_rag_response
+
+# Import the new SupportIQ AI agent.
+from app.agent.agent import run_agent
 
 
 def ask_question(question: str) -> dict:
     """
-    Process a customer question using the RAG and LLM pipeline.
+    Process a customer question using the SupportIQ AI agent.
 
-    The response generator retrieves relevant knowledge-base
-    information and uses the configured LLM to generate an answer.
+    The agent decides which tools to use, such as knowledge-base
+    search, category prediction, and urgency prediction.
 
     Args:
         question: Customer's support question.
@@ -23,10 +24,9 @@ def ask_question(question: str) -> dict:
     if not question.strip():
         raise ValueError("Question cannot be empty.")
 
-    # Generate an answer using the existing RAG pipeline.
-    result = generate_rag_response(
-        question=question.strip(),
-    )
+    # Delegate question processing to the AI agent.
+    result = run_agent(question.strip())
 
-    # Return the generated answer and supporting sources.
+    # Return the agent's response.
     return result
+

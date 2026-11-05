@@ -1,7 +1,5 @@
-# Import pytest for testing and exception handling.
 import pytest
 
-# Import the AI assistance service.
 from app.services import ai_assistance_service
 
 # ==========================================================
@@ -9,9 +7,9 @@ from app.services import ai_assistance_service
 # ==========================================================
 
 def test_ask_question_successfully(monkeypatch):
-    """Test that a question is passed to the RAG response generator."""
+    """Test that a question is passed to the AI agent."""
 
-    # Create a sample response without calling the real OpenAI API.
+    # Define the expected response from the AI agent.
     expected_response = {
         "query": "How can I reset my password?",
         "answer": "Follow the password reset instructions.",
@@ -21,15 +19,16 @@ def test_ask_question_successfully(monkeypatch):
         "total_results": 1,
     }
 
-    # Mock the response generator.
-    def mock_generate_response(question):
+    # Mock the agent to avoid making a real OpenAI API call.
+    def mock_run_agent(question):
         assert question == "How can I reset my password?"
         return expected_response
 
+    # Replace the actual agent with our mock function.
     monkeypatch.setattr(
         ai_assistance_service,
-        "generate_rag_response",
-        mock_generate_response,
+        "run_agent",
+        mock_run_agent,
     )
 
     # Call the service.
