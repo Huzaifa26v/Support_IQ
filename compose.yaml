@@ -1,0 +1,51 @@
+services:
+  supportiq:
+    # Build the image using the project's Dockerfile.
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Name of the running container.
+    container_name: supportiq-api
+
+    # Load secrets and configuration at runtime.
+    env_file:
+      - .env
+
+    # Override settings for the container environment.
+    environment:
+      APP_ENV: production
+      DEBUG: "false"
+      DATABASE_URL: sqlite:////app/data/supportiq.db
+      HF_HOME: /app/.cache/huggingface
+
+    # Expose the FastAPI application.
+    ports:
+      - "8000:8000"
+
+    # Preserve application data between container restarts.
+    volumes:
+      - supportiq_data:/app/data
+      - supportiq_vectors:/app/vector_db
+      - supportiq_models:/app/.cache/huggingface
+
+    # Restart the application if it stops unexpectedly.
+    restart: unless-stopped
+
+    # Check whether the API is responding.
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# Persistent Docker volumes.
+volumes:
+  supportiq_data:
+  supportiq_vectors:
+  supportiq_models:
