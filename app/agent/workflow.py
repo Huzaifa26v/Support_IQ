@@ -2,11 +2,15 @@
 """OpenAI tool-calling workflow for the SupportIQ agent."""
 
 import json
+import logging
 
 # Import project modules in Ruff's required order.
 from app.agent.tools import AGENT_TOOLS, execute_tool
 from app.core.config import settings
 from app.llm.client import get_openai_client
+
+# Configure logging for agent workflow errors.
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """
 You are SupportIQ, an intelligent customer support agent.
@@ -35,6 +39,14 @@ def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
 
     if not isinstance(question, str) or not question.strip():
         raise ValueError("Question cannot be empty.")
+
+    # Ensure the tool-round limit is a positive integer.
+    if (
+    isinstance(max_tool_rounds, bool)
+    or not isinstance(max_tool_rounds, int)
+    or max_tool_rounds < 1
+  ):
+     raise ValueError("max_tool_rounds must be a positive integer.")
 
     client = get_openai_client()
 
@@ -97,8 +109,23 @@ def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
                         if metadata not in collected_sources:
                             collected_sources.append(metadata)
 
-            except (ValueError, TypeError, json.JSONDecodeError) as exc:
+            except (ValueError, TypeError) as exc:
+                # Return expected validation errors to the LLM.
                 result = {"error": str(exc)}
+
+            except Exception:
+                # Log unexpected failures without exposing internal details.
+                logger.exception(
+                    "Agent tool execution failed: %s",
+                    tool_name,
+                )
+
+                # Allow the workflow to continue safely.
+                result = {
+                    "error": (
+                        "The requested tool could not be completed."
+                    )
+                }
 
             # Return tool output to the LLM.
             messages.append(

@@ -1,6 +1,8 @@
 # Import the actual registered agent tools for integration testing.
 from types import SimpleNamespace
 
+import pytest
+
 from app.agent import tools as agent_tools
 from app.agent import workflow
 
@@ -342,7 +344,7 @@ def test_workflow_respects_max_tool_rounds(monkeypatch):
 
     tool_call = create_tool_call(
         "call_1",
-        "predict_category",
+        "predict_category_tool",
         '{"text": "Unable to access my account"}',
     )
 
@@ -381,14 +383,11 @@ def test_workflow_respects_max_tool_rounds(monkeypatch):
         lambda: fake_client,
     )
 
-    monkeypatch.setattr(
-        workflow,
-        "execute_tool",
-        lambda tool_name, arguments: {
-            "category": "account_access"
-        },
+    monkeypatch.setitem(
+        agent_tools.AVAILABLE_TOOLS,
+        "predict_category_tool",
+        lambda text: {"category": "account_access"},
     )
-
     result = workflow.run_agent_workflow(
         "Classify this ticket.",
         max_tool_rounds=1,
@@ -399,3 +398,111 @@ def test_workflow_respects_max_tool_rounds(monkeypatch):
 
     # The final LLM request must not include tool definitions.
     assert "tools" not in request_arguments[-1]
+
+# ==========================================================
+# 6. TEST UNEXPECTED TOOL FAILURE
+# ==========================================================
+
+def test_workflow_handles_unexpected_tool_failure(
+    monkeypatch,
+    caplog,
+):
+    """Test safe handling and logging of unexpected tool errors."""
+
+    tool_call = create_tool_call(
+        "call_1",
+        "predict_category_tool",
+        '{"text": "Unable to access my account"}',
+    )
+
+    responses = [
+        create_response(
+            FakeAssistantMessage(tool_calls=[tool_call])
+        ),
+        create_response(
+            FakeAssistantMessage(
+                content="I could not complete the category prediction."
+            )
+        ),
+    ]
+
+    call_count = 0
+    request_arguments = []
+
+    def mock_create(**kwargs):
+        nonlocal call_count
+
+        request_arguments.append(kwargs)
+        response = responses[call_count]
+        call_count += 1
+
+        return response
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(create=mock_create)
+        )
+    )
+
+    def failing_tool(text):
+        raise RuntimeError("Internal prediction service failure.")
+
+    monkeypatch.setattr(
+        workflow,
+        "get_openai_client",
+        lambda: fake_client,
+    )
+
+    monkeypatch.setitem(
+        agent_tools.AVAILABLE_TOOLS,
+        "predict_category_tool",
+        failing_tool,
+    )
+
+    result = workflow.run_agent_workflow(
+        "Classify this account issue."
+    )
+
+    # Verify that the workflow generated its final answer.
+    assert result["answer"] == (
+        "I could not complete the category prediction."
+    )
+
+    # Verify that both LLM requests completed.
+    assert call_count == 2
+
+    # Verify that the unexpected error was logged.
+    assert "Agent tool execution failed" in caplog.text
+
+    # Verify that internal error details were not sent to the LLM.
+    tool_messages = [
+        message
+        for message in request_arguments[1]["messages"]
+        if message["role"] == "tool"
+    ]
+
+    assert len(tool_messages) == 1
+    assert "could not be completed" in tool_messages[0]["content"]
+    assert "Internal prediction service failure" not in (
+        tool_messages[0]["content"]
+    )
+
+# ==========================================================
+# 7. TEST INVALID MAXIMUM TOOL ROUND VALUES
+# ==========================================================
+
+@pytest.mark.parametrize(
+    "invalid_value",
+    [0, -1, 1.5, "3", True],
+)
+def test_workflow_rejects_invalid_max_tool_rounds(invalid_value):
+    """Test that invalid tool-round limits are rejected."""
+
+    with pytest.raises(
+        ValueError,
+        match="max_tool_rounds must be a positive integer",
+    ):
+        workflow.run_agent_workflow(
+            "Classify this ticket.",
+            max_tool_rounds=invalid_value,
+        )
