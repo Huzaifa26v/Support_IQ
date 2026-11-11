@@ -1,20 +1,29 @@
-# Standard library imports
+
+# Standard library imports.
 import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 
-# SQLAlchemy imports
+# SQLAlchemy imports.
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-# Project imports
+# Project imports.
 from app.models.knowledge_document import KnowledgeDocument
 from app.rag.chunker import chunk_text
 from app.rag.document_loader import load_document
 from app.rag.vector_store import add_chunks, delete_chunks
 
-# Adding checksum function
+
+# Custom exception for duplicate knowledge documents.
+class DuplicateDocumentError(ValueError):
+    """Raised when a document already exists in the knowledge base."""
+
+
+# ==========================================================
+# 1. CALCULATE DOCUMENT CHECKSUM
+# ==========================================================
 
 def calculate_checksum(file_path: str | Path) -> str:
     """
@@ -26,11 +35,14 @@ def calculate_checksum(file_path: str | Path) -> str:
 
     path = Path(file_path)
 
+    # Ensure the document exists.
     if not path.exists() or not path.is_file():
         raise FileNotFoundError(f"Document not found: {path}")
 
+    # Initialize SHA-256 hashing.
     sha256 = hashlib.sha256()
 
+    # Read the document in 8 KB blocks.
     with path.open("rb") as document:
         for chunk in iter(lambda: document.read(8192), b""):
             sha256.update(chunk)
@@ -38,7 +50,10 @@ def calculate_checksum(file_path: str | Path) -> str:
     return sha256.hexdigest()
 
 
-# Adding Duplicate detection
+# ==========================================================
+# 2. FIND EXISTING DOCUMENT
+# ==========================================================
+
 def find_existing_document(
     db: Session,
     checksum: str,
@@ -55,6 +70,11 @@ def find_existing_document(
     )
 
     return db.scalar(statement)
+
+
+# ==========================================================
+# 3. INGEST KNOWLEDGE DOCUMENT
+# ==========================================================
 
 def ingest_document(
     db: Session,
@@ -80,18 +100,18 @@ def ingest_document(
 
     path = Path(file_path)
 
-    # Validate the document and calculate its checksum.
+    # Calculate the document checksum.
     checksum = calculate_checksum(path)
 
-    # Reject documents that have already been registered.
+    # Check whether this document already exists.
     existing_document = find_existing_document(db, checksum)
 
     if existing_document:
-        raise ValueError(
+        raise DuplicateDocumentError(
             f"Document already exists: {existing_document.file_name}"
         )
 
-    # Create the initial SQLite record.
+    # Create the initial database record.
     document = KnowledgeDocument(
         file_name=path.name,
         file_type=path.suffix.lower().lstrip("."),
@@ -104,46 +124,46 @@ def ingest_document(
     db.add(document)
 
     try:
-        # Commit first to obtain a permanent document ID.
+        # Commit to obtain a permanent document ID.
         db.commit()
         db.refresh(document)
 
     except IntegrityError as exc:
-        # Handle a duplicate inserted by another request.
+        # Handle duplicate insertion from another request.
         db.rollback()
 
-        raise ValueError(
+        raise DuplicateDocumentError(
             "This document has already been registered."
         ) from exc
 
-    # Keep track of inserted vectors for possible cleanup.
+    # Track inserted vectors for possible cleanup.
     chunk_ids = []
 
     try:
-        # Extract text and metadata from the document.
+        # Extract text from the uploaded document.
         loaded_document = load_document(path)
 
-        # Divide extracted text into overlapping chunks.
+        # Divide extracted text into smaller chunks.
         chunks = chunk_text(
             loaded_document["text"],
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         )
 
-        # Attach document information to every vector.
+        # Prepare metadata for ChromaDB.
         metadata = {
             "document_id": str(document.id),
             "file_name": document.file_name,
             "file_type": document.file_type,
         }
 
-        # Generate embeddings and save chunks in ChromaDB.
+        # Generate embeddings and store document chunks.
         chunk_ids = add_chunks(
             chunks,
             document_metadata=metadata,
         )
 
-        # Update the SQLite record after successful insertion.
+        # Update the database record after successful processing.
         document.status = "completed"
         document.chunk_count = len(chunk_ids)
         document.error_message = None
@@ -163,7 +183,7 @@ def ingest_document(
                 # Preserve the original processing exception.
                 pass
 
-        # Roll back any incomplete database transaction.
+        # Roll back incomplete database operations.
         db.rollback()
 
         # Retrieve the document record again.
@@ -180,5 +200,5 @@ def ingest_document(
 
             db.commit()
 
-        # Let the caller handle the original exception.
+        # Re-raise the original exception.
         raise

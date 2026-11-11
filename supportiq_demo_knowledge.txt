@@ -1,0 +1,16 @@
+﻿SupportIQ Customer Support Knowledge Base
+
+Account Access:
+Customers who cannot access their accounts should first verify their registered email address.
+If they forget their password, they should use the password reset option.
+
+Billing Support:
+Customers can request clarification about their invoices and payment transactions.
+Billing-related problems should be assigned to the billing support category.
+
+Technical Support:
+Customers experiencing application errors should provide the error message and describe the steps that caused the issue.
+Technical issues should be reviewed by the technical support team.
+
+Support Hours:
+SupportIQ customer support operates Monday through Friday, from 9 AM to 5 PM.

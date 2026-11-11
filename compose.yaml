@@ -18,6 +18,8 @@ services:
       DEBUG: "false"
       DATABASE_URL: sqlite:////app/data/supportiq.db
       HF_HOME: /app/.cache/huggingface
+      # Persistent directory for uploaded knowledge documents.
+      KNOWLEDGE_UPLOAD_DIR: /app/data/knowledge_documents
 
     # Expose the FastAPI application.
     ports:

@@ -1,4 +1,7 @@
 # SecretStr prevents accidental exposure of sensitive configuration values.
+# Import Path to configure the knowledge document storage directory.
+from pathlib import Path
+
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,6 +14,12 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     database_url: str = "sqlite:///./supportiq.db"
+
+    # Directory used to store uploaded knowledge documents.
+    knowledge_upload_dir: Path = Path("data/knowledge_documents")
+
+    # Maximum permitted document upload size: 10 MB.
+    knowledge_max_upload_size: int = 10 * 1024 * 1024
 
     # OpenAI LLM configuration.
     # The API key is loaded securely from the .env file.
