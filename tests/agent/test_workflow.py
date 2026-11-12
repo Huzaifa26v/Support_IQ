@@ -58,6 +58,112 @@ def create_response(message):
         ]
     )
 
+# ==========================================================
+# TEST OPENAI RESPONSE VALIDATION
+# ==========================================================
+
+def test_validate_llm_response_rejects_missing_choices():
+    """Test rejection when the LLM response has no choices."""
+
+    response = SimpleNamespace(choices=[])
+
+    with pytest.raises(
+        ValueError,
+        match="The LLM returned no response choices",
+    ):
+        workflow.validate_llm_response(response)
+
+
+def test_validate_llm_response_rejects_missing_message():
+    """Test rejection when the response has no assistant message."""
+
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(message=None)]
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="no assistant message",
+    ):
+        workflow.validate_llm_response(response)
+
+
+def test_validate_llm_response_rejects_invalid_content():
+    """Test rejection when assistant content is not a string."""
+
+    response = create_response(
+        SimpleNamespace(
+            content=123,
+            tool_calls=None,
+        )
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="invalid content",
+    ):
+        workflow.validate_llm_response(response)
+
+
+def test_validate_llm_response_rejects_invalid_tool_calls():
+    """Test rejection when tool calls are not provided as a list."""
+
+    response = create_response(
+        SimpleNamespace(
+            content=None,
+            tool_calls="invalid",
+        )
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="invalid tool calls",
+    ):
+        workflow.validate_llm_response(response)
+
+
+@pytest.mark.parametrize(
+    "tool_call",
+    [
+        SimpleNamespace(
+            id="",
+            function=SimpleNamespace(
+                name="search_knowledge_base",
+                arguments="{}",
+            ),
+        ),
+        SimpleNamespace(
+            id="call_1",
+            function=None,
+        ),
+        SimpleNamespace(
+            id="call_1",
+            function=SimpleNamespace(
+                name="",
+                arguments="{}",
+            ),
+        ),
+        SimpleNamespace(
+            id="call_1",
+            function=SimpleNamespace(
+                name="search_knowledge_base",
+                arguments={},
+            ),
+        ),
+    ],
+)
+def test_validate_llm_response_rejects_malformed_tool_calls(tool_call):
+    """Test rejection of malformed individual tool calls."""
+
+    response = create_response(
+        SimpleNamespace(
+            content=None,
+            tool_calls=[tool_call],
+        )
+    )
+
+    with pytest.raises(ValueError):
+        workflow.validate_llm_response(response)
 
 # ==========================================================
 # 1. TEST NORMAL RESPONSE WITHOUT TOOL CALLS

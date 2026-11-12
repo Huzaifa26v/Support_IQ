@@ -33,20 +33,64 @@ Rules:
 - Keep answers professional, clear, and concise.
 """
 
+def validate_llm_response(response):
+    """Validate the structure of an OpenAI chat completion response."""
+
+    choices = getattr(response, "choices", None)
+
+    if not isinstance(choices, (list, tuple)) or not choices:
+        raise ValueError("The LLM returned no response choices.")
+
+    assistant_message = getattr(choices[0], "message", None)
+
+    if assistant_message is None:
+        raise ValueError("The LLM response contains no assistant message.")
+
+    content = getattr(assistant_message, "content", None)
+    tool_calls = getattr(assistant_message, "tool_calls", None)
+
+    if content is not None and not isinstance(content, str):
+        raise ValueError("The LLM response contains invalid content.")
+
+    if tool_calls is not None and not isinstance(tool_calls, list):
+        raise ValueError("The LLM response contains invalid tool calls.")
+
+    # Validate every tool call before the workflow executes it.
+    for tool_call in tool_calls or []:
+        if not isinstance(getattr(tool_call, "id", None), str):
+            raise ValueError("The LLM response contains an invalid tool call ID.")
+
+        if not tool_call.id.strip():
+            raise ValueError("The LLM response contains an empty tool call ID.")
+
+        function = getattr(tool_call, "function", None)
+
+        if function is None:
+            raise ValueError("The LLM response contains an invalid tool function.")
+
+        function_name = getattr(function, "name", None)
+        arguments = getattr(function, "arguments", None)
+
+        if not isinstance(function_name, str) or not function_name.strip():
+            raise ValueError("The LLM response contains an invalid tool name.")
+
+        if not isinstance(arguments, str):
+            raise ValueError("The LLM response contains invalid tool arguments.")
+
+    return assistant_message
 
 def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
     """Run the LLM tool-selection and execution workflow."""
 
     if not isinstance(question, str) or not question.strip():
         raise ValueError("Question cannot be empty.")
-
     # Ensure the tool-round limit is a positive integer.
     if (
-    isinstance(max_tool_rounds, bool)
-    or not isinstance(max_tool_rounds, int)
-    or max_tool_rounds < 1
-  ):
-     raise ValueError("max_tool_rounds must be a positive integer.")
+        isinstance(max_tool_rounds, bool)
+        or not isinstance(max_tool_rounds, int)
+        or max_tool_rounds < 1
+    ):
+        raise ValueError("max_tool_rounds must be a positive integer.")
 
     client = get_openai_client()
 
@@ -71,7 +115,15 @@ def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
             max_tokens=settings.llm_max_tokens,
         )
 
-        assistant_message = response.choices[0].message
+        # Validate the LLM response before accessing its contents.
+        try:
+            assistant_message = validate_llm_response(response)
+
+        except ValueError:
+            logger.exception("Invalid response received from the LLM.")
+            raise RuntimeError(
+                "AI assistance received an invalid response."
+            ) from None
 
         # If the LLM does not request tools, it has generated its answer.
         if not assistant_message.tool_calls:
@@ -145,7 +197,17 @@ def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
         max_tokens=settings.llm_max_tokens,
     )
 
-    final_answer = final_response.choices[0].message.content
+    # Validate the final LLM response before accessing its content.
+    try:
+        final_message = validate_llm_response(final_response)
+
+    except ValueError:
+        logger.exception("Invalid final response received from the LLM.")
+        raise RuntimeError(
+            "AI assistance received an invalid final response."
+        ) from None
+
+    final_answer = final_message.content
 
     return {
         "answer": final_answer or (
