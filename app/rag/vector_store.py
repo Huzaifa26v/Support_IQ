@@ -27,9 +27,7 @@ def get_vector_store():
     VECTOR_DB_PATH.mkdir(parents=True, exist_ok=True)
 
     # Create persistent ChromaDB client
-    client = chromadb.PersistentClient(
-        path=str(VECTOR_DB_PATH)
-    )
+    client = chromadb.PersistentClient(path=str(VECTOR_DB_PATH))
 
     # Get an existing collection or create a new one
     collection = client.get_or_create_collection(
@@ -94,15 +92,26 @@ def add_chunks(
     # Get the ChromaDB collection
     collection = get_vector_store()
 
-    # Store chunks, embeddings, and metadata
-    collection.add(
-        ids=chunk_ids,
-        documents=texts,
-        embeddings=embeddings,
-        metadatas=metadatas,
-    )
+    # Store chunks, embeddings, and metadata.
+    try:
+        collection.add(
+            ids=chunk_ids,
+            documents=texts,
+            embeddings=embeddings,
+            metadatas=metadatas,
+        )
+    except Exception:
+        # Attempt to clean up partially inserted vectors.
+        try:
+            collection.delete(ids=chunk_ids)
+        except Exception:
+            # Preserve the original insertion exception.
+            pass
+
+        raise
 
     return chunk_ids
+
 
 def delete_chunks(chunk_ids: list[str]) -> None:
     """
@@ -127,6 +136,7 @@ def delete_chunks(chunk_ids: list[str]) -> None:
 
     # Delete the specified chunks.
     collection.delete(ids=chunk_ids)
+
 
 def search_similar_chunks(
     query: str,

@@ -45,3 +45,17 @@ def test_empty_document(tmp_path: Path):
 def test_load_directory_instead_of_file(tmp_path: Path):
     with pytest.raises(ValueError, match="Path is not a file"):
         load_document(tmp_path)
+
+
+def test_load_txt_document_with_utf8_bom(tmp_path: Path):
+    """Verify that UTF-8 BOM characters are handled correctly."""
+
+    file_path = tmp_path / "bom.txt"
+    file_path.write_text(
+        "\ufeffSupportIQ knowledge base.",
+        encoding="utf-8",
+    )
+
+    result = load_document(file_path)
+
+    assert result["text"] == "SupportIQ knowledge base."
