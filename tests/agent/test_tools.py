@@ -40,7 +40,21 @@ def test_search_knowledge_base_rejects_empty_query():
         tools.search_knowledge_base("   ")
 
 
-def test_search_knowledge_base_rejects_invalid_top_k():
+@pytest.mark.parametrize(
+    "invalid_top_k",
+    [0, -1, 11, 1.5, "5", True, False],
+)
+def test_search_knowledge_base_rejects_invalid_top_k(invalid_top_k):
+    """Test rejection of invalid knowledge-base result limits."""
+
+    with pytest.raises(
+        ValueError,
+        match="top_k must be between 1 and 10",
+    ):
+        tools.search_knowledge_base(
+            "password reset",
+            top_k=invalid_top_k,
+        )
     """Test that invalid result limits are rejected."""
 
     with pytest.raises(ValueError, match="top_k must be between 1 and 10"):
@@ -126,3 +140,41 @@ def test_execute_tool_rejects_invalid_arguments():
     with pytest.raises(ValueError, match="Tool arguments must be a JSON object"):
         tools.execute_tool("search_knowledge_base", "invalid")
 
+# ==========================================================
+# 5. TEST TOOL DISPATCHER
+# ==========================================================
+
+def test_execute_tool_dispatches_to_registered_function(monkeypatch):
+    """Test that the dispatcher executes the registered function."""
+
+    def mock_tool(text):
+        return {"category": "account_access", "text": text}
+
+    monkeypatch.setitem(
+        tools.AVAILABLE_TOOLS,
+        "predict_category_tool",
+        mock_tool,
+    )
+
+    result = tools.execute_tool(
+        "predict_category_tool",
+        {"text": "Unable to access my account"},
+    )
+
+    assert result == {
+        "category": "account_access",
+        "text": "Unable to access my account",
+    }
+
+
+def test_execute_tool_rejects_unexpected_arguments():
+    """Test rejection of arguments not accepted by a tool."""
+
+    with pytest.raises(TypeError):
+        tools.execute_tool(
+            "search_knowledge_base",
+            {
+                "query": "password reset",
+                "invalid_argument": "unexpected",
+            },
+        )

@@ -13,7 +13,11 @@ def search_knowledge_base(query: str, top_k: int = 5) -> dict:
     if not isinstance(query, str) or not query.strip():
         raise ValueError("Search query cannot be empty.")
 
-    if not isinstance(top_k, int) or not 1 <= top_k <= 10:
+    if (
+    isinstance(top_k, bool)
+    or not isinstance(top_k, int)
+    or not 1 <= top_k <= 10
+):
         raise ValueError("top_k must be between 1 and 10.")
 
     # Retrieve relevant chunks from the existing ChromaDB pipeline.
