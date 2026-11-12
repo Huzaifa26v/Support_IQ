@@ -78,6 +78,19 @@ def validate_llm_response(response):
             raise ValueError("The LLM response contains invalid tool arguments.")
 
     return assistant_message
+def request_llm_completion(client, **kwargs):
+    """Send an OpenAI request and handle unexpected API failures."""
+
+    try:
+        return client.chat.completions.create(**kwargs)
+
+    except Exception as exc:
+        # Log the actual error for debugging without exposing it to users.
+        logger.exception("OpenAI chat completion request failed.")
+
+        raise RuntimeError(
+            "AI assistance is temporarily unavailable."
+        ) from exc
 
 def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
     """Run the LLM tool-selection and execution workflow."""
@@ -106,14 +119,16 @@ def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
     # Limit tool rounds to prevent an endless execution loop.
     for _ in range(max_tool_rounds):
 
-        response = client.chat.completions.create(
-            model=settings.llm_model,
-            messages=messages,
-            tools=AGENT_TOOLS,
-            tool_choice="auto",
-            temperature=settings.llm_temperature,
-            max_tokens=settings.llm_max_tokens,
-        )
+        response = request_llm_completion(
+    client,
+    model=settings.llm_model,
+    messages=messages,
+    tools=AGENT_TOOLS,
+    tool_choice="auto",
+    temperature=settings.llm_temperature,
+    max_tokens=settings.llm_max_tokens,
+)
+
 
         # Validate the LLM response before accessing its contents.
         try:
@@ -190,7 +205,8 @@ def run_agent_workflow(question: str, max_tool_rounds: int = 3) -> dict:
 
     # If the tool-call limit is reached, request a final answer
     # without allowing additional tool execution.
-    final_response = client.chat.completions.create(
+    final_response = request_llm_completion(
+        client,
         model=settings.llm_model,
         messages=messages,
         temperature=settings.llm_temperature,

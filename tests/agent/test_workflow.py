@@ -612,3 +612,116 @@ def test_workflow_rejects_invalid_max_tool_rounds(invalid_value):
             "Classify this ticket.",
             max_tool_rounds=invalid_value,
         )
+
+# ==========================================================
+# 8. TEST OPENAI API FAILURE DURING INITIAL REQUEST
+# ==========================================================
+
+def test_workflow_handles_initial_openai_request_failure(
+    monkeypatch,
+    caplog,
+):
+    """Test safe handling of an initial OpenAI API failure."""
+
+    def failing_create(**kwargs):
+        raise RuntimeError("Secret internal API error.")
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=failing_create
+            )
+        )
+    )
+
+    monkeypatch.setattr(
+        workflow,
+        "get_openai_client",
+        lambda: fake_client,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="AI assistance is temporarily unavailable",
+    ) as exc_info:
+        workflow.run_agent_workflow(
+            "How can I reset my password?"
+        )
+
+    # Verify that internal error details are not exposed.
+    assert "Secret internal API error" not in str(exc_info.value)
+
+    # Verify that the actual API failure was logged.
+    assert "OpenAI chat completion request failed." in caplog.text
+
+# ==========================================================
+# 9. TEST OPENAI API FAILURE DURING FINAL REQUEST
+# ==========================================================
+
+def test_workflow_handles_final_openai_request_failure(
+    monkeypatch,
+    caplog,
+):
+    """Test safe handling of a final OpenAI API failure."""
+
+    tool_call = create_tool_call(
+        "call_1",
+        "predict_category_tool",
+        '{"text": "Unable to access my account"}',
+    )
+
+    call_count = 0
+
+    def mock_create(**kwargs):
+        nonlocal call_count
+        call_count += 1
+
+        # First request: LLM requests a tool.
+        if call_count == 1:
+            return create_response(
+                FakeAssistantMessage(
+                    tool_calls=[tool_call]
+                )
+            )
+
+        # Second request: simulate an OpenAI API failure.
+        raise RuntimeError("Secret final API error.")
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=mock_create
+            )
+        )
+    )
+
+    monkeypatch.setattr(
+        workflow,
+        "get_openai_client",
+        lambda: fake_client,
+    )
+
+    # Mock the prediction tool to avoid loading an ML model.
+    monkeypatch.setitem(
+        agent_tools.AVAILABLE_TOOLS,
+        "predict_category_tool",
+        lambda text: {"category": "account_access"},
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="AI assistance is temporarily unavailable",
+    ) as exc_info:
+        workflow.run_agent_workflow(
+            "Classify this account issue.",
+            max_tool_rounds=1,
+        )
+
+    # Verify that the final request was attempted.
+    assert call_count == 2
+
+    # Verify that internal error details are not exposed.
+    assert "Secret final API error" not in str(exc_info.value)
+
+    # Verify that the actual API failure was logged.
+    assert "OpenAI chat completion request failed." in caplog.text
